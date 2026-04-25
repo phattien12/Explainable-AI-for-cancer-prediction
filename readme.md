@@ -1,247 +1,113 @@
-# 🧠 Explainable AI for Cancer Prediction
+# 🧠 Explainable AI (XAI) for Cancer Prediction
 
-<div style="font-family:Arial, sans-serif; line-height:1.7; max-width:900px; margin:auto;">
+An end-to-end machine learning pipeline focused on **interpretability** and **trustworthiness** in medical diagnostics. This project predicts breast cancer using the Wisconsin Dataset and explains every decision using state-of-the-art XAI techniques.
 
-<h2>📌 Overview</h2>
-
-<p>
-This project demonstrates an end-to-end pipeline for <b>Explainable Artificial Intelligence (XAI)</b> in cancer prediction using machine learning models.
-</p>
-
-<p>
-Instead of only focusing on accuracy, this project emphasizes <b>interpretability</b>, helping understand <i>why</i> a model predicts cancer.
-</p>
-
-<ul>
-<li>Models: Random Forest, XGBoost</li>
-<li>Explainability: SHAP (global + local), LIME (local)</li>
-<li>Dataset: Breast Cancer Wisconsin</li>
-</ul>
-
-<p>
-Explainable AI is critical in healthcare because clinicians must understand predictions before trusting them :contentReference[oaicite:0]{index=0}.
-</p>
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![XGBoost](https://img.shields.io/badge/XGBoost-black?style=flat-square)](https://xgboost.ai/)
+[![XAI](https://img.shields.io/badge/XAI-SHAP%20%26%20LIME-red?style=flat-square)](https://github.com/slundberg/shap)
 
 ---
 
-<h2>📊 Dataset</h2>
+## 📌 Overview
 
-<ul>
-<li>Breast Cancer Wisconsin Dataset</li>
-<li>569 samples</li>
-<li>30 numerical features</li>
-<li>Target:
-    <ul>
-        <li>0 = benign</li>
-        <li>1 = malignant</li>
-    </ul>
-</li>
-</ul>
-
-<p>
-The dataset contains features such as radius, texture, perimeter, and concavity of cell nuclei :contentReference[oaicite:1]{index=1}.
-</p>
+In healthcare, a "Black Box" model is often unacceptable. Clinicians need to know **why** a model flagged a patient as high-risk. This project addresses this by:
+1.  Training high-accuracy classifiers (Random Forest & XGBoost).
+2.  Deconstructing predictions into human-readable feature contributions.
+3.  Providing both **Global** (how the model works overall) and **Local** (why this specific patient) explanations.
 
 ---
 
-<h2>⚙️ Installation</h2>
+## 📊 Dataset
+
+**Breast Cancer Wisconsin (Diagnostic)**
+* **Samples**: 569
+* **Features**: 30 numerical attributes (Mean, Standard Error, and "Worst" values for radius, texture, perimeter, area, smoothness, etc.)
+* **Target**: 
+    * `0`: Benign (Non-cancerous)
+    * `1`: Malignant (Cancerous)
+
+---
+
+## ⚙️ Installation
+
+To get started, clone this repository and install the required dependencies:
 
 ```bash
-pip install shap lime xgboost
+pip install shap lime xgboost scikit-learn matplotlib seaborn
+```
 
-<h2>🚀 Pipeline</h2>
+---
 
-<ol>
-  <li>Load dataset</li>
-  <li>Train model (Random Forest / XGBoost)</li>
-  <li>Evaluate model</li>
-  <li>Explain predictions using SHAP</li>
-  <li>Explain predictions using LIME</li>
-</ol>
+## 🚀 The Pipeline
 
+1.  **Data Ingestion**: Loading and scaling 30 numerical nuclear features.
+2.  **Training**: Benchmarking Random Forest vs. XGBoost.
+3.  **Evaluation**: Focus on **Recall** (minimizing False Negatives) and **ROC-AUC**.
+4.  **XAI Integration**: Applying SHAP and LIME to the best-performing model.
 
-<h2>🤖 Model Training</h2>
+---
 
-<h3>Random Forest</h3>
+## 🤖 Model Performance
 
-<pre>
-model = RandomForestClassifier(n_estimators=200)
-model.fit(X_train, y_train)
-</pre>
+The model achieves near-perfect diagnostic capability:
 
-<h3>XGBoost</h3>
+| Metric | Score |
+| :--- | :--- |
+| **Accuracy** | ≈ 96% |
+| **ROC-AUC** | ≈ 0.99 |
 
-<pre>
-model = XGBClassifier(eval_metric='logloss')
-model.fit(X_train, y_train)
-</pre>
+### Confusion Matrix Insight
+```text
+[[40  3]   <- Benign
+ [ 2 69]]  <- Malignant
+```
+> **Critical Note**: With only 2 False Negatives, the model ensures that very few malignant cases go undetected, which is the top priority in clinical screening.
 
+---
 
-<h2>📈 Model Performance</h2>
+## 🧠 Explainable AI (XAI) Methods
 
-<ul>
-  <li>Accuracy ≈ 96%</li>
-  <li>ROC-AUC ≈ 0.99</li>
-</ul>
-
-<p>
-Metrics such as accuracy, precision, recall, and ROC-AUC are standard for evaluating medical classification models.
-</p>
+### 1. SHAP (SHapley Additive exPlanations)
+SHAP uses game theory to assign each feature an importance value for a particular prediction.
 
 
-<h2>📊 Confusion Matrix (output4.png)</h2>
 
-<pre>
-[[40  3]
- [ 2 69]]
-</pre>
+* **Global Summary**: Visualizes which features (like `mean concave points`) most strongly drive the model's global decisions.
+* **Local Force Plot**: Explains a single patient's prediction as a mathematical sum: 
+$$prediction = base\_value + \sum SHAP\_values$$
 
-<ul>
-  <li>True Positive: 69</li>
-  <li>True Negative: 40</li>
-  <li>False Positive: 3</li>
-  <li>False Negative: 2</li>
-</ul>
-
-<p>
-Low false negatives are especially important in cancer detection because missing a cancer case is critical.
-</p>
+### 2. LIME (Local Interpretable Model-agnostic Explanations)
+LIME creates a simplified, local linear model around a specific prediction to explain its behavior.
 
 
-<h2>🧠 Explainable AI (XAI)</h2>
 
+* **Insight**: Shows exactly which feature values "voted" for Malignant vs. Benign for a specific individual.
 
-<h3>1️⃣ SHAP Summary Plot (output.png)</h3>
+---
 
-<p>
-This is a <b>global explanation</b> showing how each feature impacts the model predictions.
-</p>
+## 🔬 Why This Matters
 
-<ul>
-  <li>Each dot = one patient</li>
-  <li>X-axis = SHAP value (impact on prediction)</li>
-  <li>Color:
-    <ul>
-      <li>Red → high feature value</li>
-      <li>Blue → low feature value</li>
-    </ul>
-  </li>
-</ul>
+* **Clinical Trust**: Allows doctors to verify if the AI is looking at the correct medical markers.
+* **Vulnerability Detection**: Identifies if the model is relying on "noise" or biases in the data.
+* **Feature Discovery**: Helps researchers identify which cell nucleus characteristics are the strongest indicators of malignancy.
 
-<p><b>Key Insight:</b></p>
+---
 
-<ul>
-  <li>Top features = most important</li>
-  <li>Right side → increases cancer probability</li>
-  <li>Left side → decreases probability</li>
-</ul>
-
-
-<h3>2️⃣ SHAP Force Plot (output2.png)</h3>
-
-<p>
-This is a <b>local explanation</b> for a single patient.
-</p>
-
-<ul>
-  <li>Base value = average prediction</li>
-  <li>Red features → push prediction higher</li>
-  <li>Blue features → push prediction lower</li>
-</ul>
-
-<p><b>Formula:</b></p>
-
-<pre>
-prediction = base_value + sum(SHAP values)
-</pre>
-
-<p>
-This explains exactly why the model predicted cancer (or not) for one specific case.
-</p>
-
-
-<h3>3️⃣ LIME Explanation (output3.png)</h3>
-
-<p>
-LIME provides a <b>local explanation</b> using a simple interpretable model.
-</p>
-
-<ul>
-  <li>Positive weight → increases prediction</li>
-  <li>Negative weight → decreases prediction</li>
-</ul>
-
-<p><b>Key Difference:</b></p>
-
-<table border="1" cellpadding="6">
-<tr>
-  <th>SHAP</th>
-  <th>LIME</th>
-</tr>
-<tr>
-  <td>Global + Local</td>
-  <td>Local only</td>
-</tr>
-<tr>
-  <td>Stable</td>
-  <td>Approximate</td>
-</tr>
-<tr>
-  <td>Game theory</td>
-  <td>Linear approximation</td>
-</tr>
-</table>
-
-
-<h2>🔬 Why Explainable AI Matters</h2>
-
-<ul>
-  <li>Improves trust in AI systems</li>
-  <li>Helps doctors understand predictions</li>
-  <li>Identifies important medical features</li>
-</ul>
-
-
-<h2>🧠 Key Takeaways</h2>
-
-<ul>
-  <li>High accuracy alone is not enough in healthcare</li>
-  <li>Interpretability is essential for real-world use</li>
-  <li>SHAP explains overall model behavior</li>
-  <li>LIME explains individual predictions</li>
-</ul>
-
-
-<h2>🚀 Future Improvements</h2>
-
-<ul>
-  <li>Deep Learning (CNN + Grad-CAM)</li>
-  <li>Medical image datasets</li>
-  <li>Hyperparameter tuning (Optuna)</li>
-  <li>Deployment with Streamlit</li>
-</ul>
-
-
-<h2>📁 Project Structure</h2>
-
-<pre>
+## 📂 Project Structure
+```text
 Explainable-AI-Cancer/
-│
-├── Explainable_AI_for_cancer_prediction.ipynb
-├── README.md
-├── output.png
-├── output2.png
-├── output3.png
-├── output4.png
-</pre>
+ ┣ 📜 Explainable_AI_for_cancer_prediction.ipynb # Full Pipeline
+ ┣ 📜 README.md                                  # Documentation
+ ┣ 📂 outputs/                                   # SHAP & LIME Plots
+ ┗ 📜 model_checkpoint.pkl                       # Trained XGBoost model
+```
 
+---
 
-<h2>👨‍💻 Author</h2>
+## 👨‍💻 Author
+**Phat**
+*Passionate about Research in Computer Vision, XAI, and Multimodal Image Processing.*
 
-<p>
-<b>Phat</b> — Passionate about research in <i>Computer Vision</i> and <i>Multimodal Image Processing</i>.
-</p>
-
-<p>
-Built with ❤️ using Explainable AI techniques
-</p>
+---
+*Built with ❤️ to bridge the gap between AI performance and Medical Trust.*
